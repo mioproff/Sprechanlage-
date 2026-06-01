@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sprechanlage — Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="panel">
+    <header class="topbar">
+      <div class="title">Sprechanlage</div>
+      <div class="datetime" id="datetime">--:--</div>
+    </header>
+
+    <main class="main">
+      <section class="left">
+        <h3>Gongs</h3>
+        <div class="buttons grid">
+          <!-- create six gong tiles + alarm -->
+          <div class="gong-tile"><button class="icon-btn" id="play-schulgong"><span class="icon">🏫</span><span class="label">Schulgong</span></button><div class="status" id="status-schulgong">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong2"><span class="icon">🔔</span><span class="label">Gong 2</span></button><div class="status" id="status-gong2">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong3"><span class="icon">🔔</span><span class="label">Gong 3</span></button><div class="status" id="status-gong3">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong4"><span class="icon">🔔</span><span class="label">Gong 4</span></button><div class="status" id="status-gong4">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong5"><span class="icon">🔔</span><span class="label">Gong 5</span></button><div class="status" id="status-gong5">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-durchsage"><span class="icon">📢</span><span class="label">Durchsage</span></button><div class="status" id="status-durchsage">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn alarm" id="play-alarm"><span class="icon">🚨</span><span class="label">Alarm</span></button><div class="status" id="status-alarm">Keine Datei</div></div>
+        </div>
+
+        <div class="live">
+          <h4>Sprechen</h4>
+          <textarea id="tts-text" placeholder="Text zum Sprechen (TTS)"></textarea>
+          <div class="row">
+            <button id="speak-tts">Text sprechen</button>
+            <button id="push-to-talk">Halte zum Sprechen</button>
+          </div>
+          <div class="mic-visualizer" id="mic-visualizer" aria-label="Mikrofon Pegel">
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+            <div class="mic-bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="right">
+        <div class="panel-box">
+          <h3>Aktive Elemente</h3>
+          <ul id="active-list" class="active-list">
+            <!-- active items -->
+          </ul>
+        </div>
+
+        <div class="panel-box controls">
+            <div class="controls-row">
+              <button id="gear-settings" class="gear nicer" title="Einstellungen">⚙️</button>
+              <div style="flex:1"></div>
+            </div>
+          <div style="margin-top:8px">
+            <strong>Notfall</strong>
+            <button type="button" id="emergency-btn" title="Notfalldatei auswählen" class="emergency small" disabled>NOTFALL</button>
+            <div id="emergency-status" class="emergency-status">Datei wählen, dann drücken.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">Die MP3s kannst du oben pro Gong hochladen. Für bestmögliche Geräte‑Auswahl bitte Chrome/Edge verwenden.</footer>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Einstellungen</h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="devices">Geräte</button>
+        <button class="tab" data-tab="files">Dateien</button>
+      </div>
+      <div class="tab-content" id="tab-devices">
+        <div class="field">
+          <label for="select-input">Eingabegerät (Mikrofon)</label>
+          <select id="select-input"></select>
+        </div>
+        <div class="field">
+          <label for="select-output">Ausgabegerät (Lautsprecher)</label>
+          <select id="select-output"></select>
+        </div>
+        <div class="field">
+          <button id="btn-request-perm" class="mini">Mikrofon erlauben / Geräte aktualisieren</button>
+        </div>
+        <div class="field">
+          <button id="btn-test-mic" class="mini">Mikrofon testen</button>
+          <button id="btn-test-speaker" class="mini">Lautsprecher testen</button>
+        </div>
+        <div id="mic-preview" class="field" style="display:none">
+          <label>Live‑Vorschau</label>
+          <div id="mic-audio-container"></div>
+        </div>
+      </div>
+      <div class="tab-content hidden" id="tab-files">
+        <div class="field">
+          <label>Schulgong</label>
+          <input type="file" id="upload-schulgong" accept="audio/*">
+          <div class="status" id="files-status-schulgong">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-schulgong" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-schulgong" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gong 2</label>
+          <input type="file" id="upload-gong2" accept="audio/*">
+          <div class="status" id="files-status-gong2">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-gong2" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-gong2" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gong 3</label>
+          <input type="file" id="upload-gong3" accept="audio/*">
+          <div class="status" id="files-status-gong3">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-gong3" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-gong3" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gong 4</label>
+          <input type="file" id="upload-gong4" accept="audio/*">
+          <div class="status" id="files-status-gong4">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-gong4" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-gong4" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gong 5</label>
+          <input type="file" id="upload-gong5" accept="audio/*">
+          <div class="status" id="files-status-gong5">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-gong5" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-gong5" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Durchsage</label>
+          <input type="file" id="upload-durchsage" accept="audio/*">
+          <div class="status" id="files-status-durchsage">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-durchsage" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-durchsage" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Alarm</label>
+          <input type="file" id="upload-alarm" accept="audio/*">
+          <div class="status" id="files-status-alarm">Keine Datei</div>
+          <div class="file-controls">
+            <input type="text" id="rename-alarm" class="file-rename" placeholder="Anzeigename">
+            <button type="button" id="remove-alarm" class="mini danger">Entfernen</button>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="save-settings">Speichern</button>
+        <button id="close-settings">Schliessen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- files moved into settings modal -->
+
+  <!-- Emergency button removed as requested -->
+
+  <!-- Lock overlay with NumPad -->
+  <div id="lock-overlay" class="lock-overlay">
+    <div id="numpad" class="numpad">
+      <div class="numpad-display"><span id="numpad-mask">----</span></div>
+      <div class="numpad-keys">
+        <button type="button" class="num">1</button>
+        <button type="button" class="num">2</button>
+        <button type="button" class="num">3</button>
+        <button type="button" class="num">4</button>
+        <button type="button" class="num">5</button>
+        <button type="button" class="num">6</button>
+        <button type="button" class="num">7</button>
+        <button type="button" class="num">8</button>
+        <button type="button" class="num">9</button>
+        <button type="button" class="num">0</button>
+        <button type="button" id="numpad-clear" class="action">Löschen</button>
+        <button type="button" id="numpad-enter" class="action">Enter</button>
+      </div>
+      <div class="numpad-hint">Panel gesperrt — Code eingeben</div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
