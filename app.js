@@ -4,8 +4,8 @@
 //  Leer lassen ('') = Datei noch nicht hinterlegt
 // ============================================================
 const AUDIO_CONFIG = {
-  schulgong:  { path: '/Sound/Schulgong.mp3', label: 'Schulgong',  icon: '🏫' },
-  gong2:      { path: '/Sound/Gong 1.mp3', label: 'Gong 2',     icon: '🔔' },
+  schulgong:  { path: 'Sprechanlage/Sound/Schulgong.mp3', label: 'Schulgong',  icon: '🏫' },
+  gong2:      { path: 'Sprechanlage/Sound/Gong 1.mp3', label: 'Gong 2',     icon: '🔔' },
   gong3:      { path: '', label: 'Gong 3',     icon: '🔔' },
   gong4:      { path: '', label: 'Gong 4',     icon: '🔔' },
   gong5:      { path: '', label: 'Gong 5',     icon: '🔔' },
