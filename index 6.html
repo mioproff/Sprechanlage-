@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sprechanlage — Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="panel">
+    <header class="topbar">
+      <div class="title">Sprechanlage</div>
+      <div class="datetime-widget">
+        <div class="dt-time" id="dt-time">--:--:--</div>
+        <div class="dt-date" id="dt-date">--</div>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="left">
+        <h3>Gongs</h3>
+        <div class="buttons grid">
+          <div class="gong-tile"><button class="icon-btn" id="play-schulgong"><span class="icon">🏫</span><span class="label">Schulgong</span></button><div class="status" id="status-schulgong">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong2"><span class="icon">🔔</span><span class="label">Gong 2</span></button><div class="status" id="status-gong2">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong3"><span class="icon">🔔</span><span class="label">Gong 3</span></button><div class="status" id="status-gong3">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong4"><span class="icon">🔔</span><span class="label">Gong 4</span></button><div class="status" id="status-gong4">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-gong5"><span class="icon">🔔</span><span class="label">Gong 5</span></button><div class="status" id="status-gong5">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn" id="play-durchsage"><span class="icon">📢</span><span class="label">Durchsage</span></button><div class="status" id="status-durchsage">Keine Datei</div></div>
+          <div class="gong-tile"><button class="icon-btn alarm" id="play-alarm"><span class="icon">🚨</span><span class="label">Alarm</span></button><div class="status" id="status-alarm">Keine Datei</div></div>
+          <div class="gong-tile">
+            <button class="icon-btn create-btn" id="create-button-btn">
+              <span class="icon">➕</span><span class="label">Erstellen</span>
+            </button>
+            <div class="status">Neuer Button</div>
+          </div>
+        </div>
+
+        <div id="custom-buttons-section" style="display:none">
+          <h3>Eigene Buttons</h3>
+          <div class="buttons grid" id="custom-buttons-grid"></div>
+        </div>
+
+        <div class="live">
+          <h4>Sprechen</h4>
+          <textarea id="tts-text" placeholder="Text zum Sprechen (TTS)"></textarea>
+          <div class="row">
+            <button id="speak-tts">Text sprechen</button>
+            <button id="push-to-talk">Halte zum Sprechen</button>
+          </div>
+          <div class="mic-visualizer" id="mic-visualizer" aria-label="Mikrofon Pegel">
+            <div class="mic-bar"></div><div class="mic-bar"></div><div class="mic-bar"></div>
+            <div class="mic-bar"></div><div class="mic-bar"></div><div class="mic-bar"></div>
+            <div class="mic-bar"></div><div class="mic-bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="right">
+        <div class="panel-box">
+          <h3>Aktive Elemente</h3>
+          <ul id="active-list" class="active-list"></ul>
+        </div>
+
+        <!-- Numpad Widget (immer sichtbar nach Unlock) -->
+        <div class="panel-box numpad-widget" id="numpad-widget">
+          <div class="numpad-widget-title">🔢 Code eingeben</div>
+          <div class="numpad-widget-display"><span id="widget-mask">----</span></div>
+          <div class="numpad-widget-keys">
+            <button type="button" class="wnum">1</button>
+            <button type="button" class="wnum">2</button>
+            <button type="button" class="wnum">3</button>
+            <button type="button" class="wnum">4</button>
+            <button type="button" class="wnum">5</button>
+            <button type="button" class="wnum">6</button>
+            <button type="button" class="wnum">7</button>
+            <button type="button" class="wnum">8</button>
+            <button type="button" class="wnum">9</button>
+            <button type="button" class="wnum">0</button>
+            <button type="button" id="widget-clear" class="waction">⌫</button>
+            <button type="button" id="widget-enter" class="waction">▶</button>
+          </div>
+          <div class="numpad-widget-feedback" id="widget-feedback"></div>
+        </div>
+
+        <div class="panel-box controls">
+          <div class="controls-row">
+            <button id="gear-settings" class="gear nicer" title="Einstellungen">⚙️</button>
+            <div style="flex:1"></div>
+          </div>
+          <div style="margin-top:8px">
+            <strong>Notfall</strong>
+            <button type="button" id="emergency-btn" class="emergency small" disabled>NOTFALL</button>
+            <div id="emergency-status" class="emergency-status">Alarm-Datei in AUDIO_CONFIG hinterlegen.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">Dateien direkt in <code>app.js</code> konfigurieren (<code>AUDIO_CONFIG</code>). Chrome/Edge empfohlen.</footer>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Einstellungen</h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="devices">Geräte</button>
+        <button class="tab" data-tab="buttons">Eigene Buttons</button>
+        <button class="tab" data-tab="codes">Codes</button>
+      </div>
+
+      <!-- Tab: Geräte -->
+      <div class="tab-content" id="tab-devices">
+        <div class="field"><label for="select-input">Eingabegerät (Mikrofon)</label><select id="select-input"></select></div>
+        <div class="field"><label for="select-output">Ausgabegerät (Lautsprecher)</label><select id="select-output"></select></div>
+        <div class="field"><button id="btn-request-perm" class="mini">Mikrofon erlauben / Geräte aktualisieren</button></div>
+        <div class="field">
+          <button id="btn-test-mic" class="mini">Mikrofon testen</button>
+          <button id="btn-test-speaker" class="mini">Lautsprecher testen</button>
+        </div>
+        <div id="mic-preview" class="field" style="display:none">
+          <label>Live‑Vorschau</label><div id="mic-audio-container"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Eigene Buttons -->
+      <div class="tab-content hidden" id="tab-buttons">
+        <p class="tab-hint">Hier kannst du eigene Buttons verwalten und löschen.</p>
+        <div id="custom-buttons-manage-list"></div>
+      </div>
+
+      <!-- Tab: Codes -->
+      <div class="tab-content hidden" id="tab-codes">
+        <p class="tab-hint">Jedem Code kannst du direkt eine Audiodatei (MP3, WAV, OGG …) zuweisen — oder einen Audioschlüssel aus <code>AUDIO_CONFIG</code>.</p>
+        <div id="codes-list" style="margin-bottom:12px"></div>
+        <hr style="border:none;border-top:1px solid #ddd;margin:12px 0">
+        <h4 style="margin:0 0 8px;font-size:13px;color:#555">Neuen Code hinzufügen</h4>
+        <div class="field"><label>Code (Ziffernfolge) *</label><input type="text" id="new-code-key" class="file-rename" placeholder="z.B. 4444" maxlength="16" style="width:120px"></div>
+        <div class="field"><label>Beschreibung *</label><input type="text" id="new-code-label" class="file-rename" placeholder="z.B. Pausengong" style="width:100%"></div>
+        <div class="field"><label>Emoji / Icon</label><input type="text" id="new-code-icon" class="file-rename" placeholder="🔔" style="width:60px"></div>
+        <div class="field">
+          <label>Audiodatei direkt hochladen <span style="color:var(--muted)">(empfohlen)</span></label>
+          <input type="file" id="new-code-file" accept="audio/*" style="margin-top:4px;font-size:13px">
+        </div>
+        <div class="field">
+          <label>— oder — Audioschlüssel aus <code>AUDIO_CONFIG</code></label>
+          <input type="text" id="new-code-audio" class="file-rename" placeholder="z.B. alarm, schulgong …" style="width:100%">
+        </div>
+        <button id="add-code-btn" class="mini" style="background:var(--accent);color:white;border-color:var(--accent);padding:8px 14px;font-weight:700;">+ Code hinzufügen</button>
+      </div>
+
+      <div class="actions">
+        <button id="save-settings">Speichern</button>
+        <button id="close-settings">Schliessen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Button Modal -->
+  <div id="create-btn-modal" class="modal hidden">
+    <div class="modal-content create-modal-content">
+      <h2>✨ Neuen Button erstellen</h2>
+      <div class="field"><label>Name *</label><input type="text" id="cb-label" class="file-rename" placeholder="z.B. Pausengong" style="width:100%"></div>
+      <div class="field"><label>Emoji / Icon</label><input type="text" id="cb-icon" class="file-rename" placeholder="🔊" style="width:80px"></div>
+      <div class="field">
+        <label>Dateipfad (in <code>AUDIO_CONFIG</code> hinterlegen oder relativer Pfad)</label>
+        <input type="text" id="cb-path" class="file-rename" placeholder="audio/mein-gong.mp3" style="width:100%">
+        <div class="status">Relativer Pfad zur Audiodatei — muss auf dem Server liegen.</div>
+      </div>
+      <div class="field cb-checkbox-row">
+        <input type="checkbox" id="cb-is-alarm">
+        <label for="cb-is-alarm">Als Alarm-Button stylen (rot)</label>
+      </div>
+      <div class="actions">
+        <button id="cb-save" class="btn-create-save">Button erstellen</button>
+        <button id="cb-close">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lock overlay -->
+  <div id="lock-overlay" class="lock-overlay">
+    <div id="numpad" class="numpad">
+      <div class="numpad-display"><span id="numpad-mask">----</span></div>
+      <div class="numpad-keys">
+        <button type="button" class="num">1</button><button type="button" class="num">2</button><button type="button" class="num">3</button>
+        <button type="button" class="num">4</button><button type="button" class="num">5</button><button type="button" class="num">6</button>
+        <button type="button" class="num">7</button><button type="button" class="num">8</button><button type="button" class="num">9</button>
+        <button type="button" class="num">0</button>
+        <button type="button" id="numpad-clear" class="action">Löschen</button>
+        <button type="button" id="numpad-enter" class="action">Enter</button>
+      </div>
+      <div class="numpad-hint">Panel gesperrt — Entsperrcode eingeben</div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
